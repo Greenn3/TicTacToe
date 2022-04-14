@@ -1,12 +1,12 @@
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.browser.document
 import kotlinx.browser.window
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.jetbrains.compose.web.renderComposable
@@ -19,6 +19,7 @@ open class Field {
 
 }
 
+val scope = MainScope()
 
 fun main() {
     document.body?.style?.backgroundColor = "grey"
@@ -45,6 +46,7 @@ fun main() {
     val listDiag1: MutableList<Field?> = mutableStateListOf(list[0][0], list[1][1], list[2][2])
     val listDiag2: MutableList<Field?> = mutableStateListOf(list[2][0], list[1][1], list[0][2])
 
+    var isComputersTurn by mutableStateOf(false)
 //true = multi ; false = single
     var singleOrMulti: Boolean by mutableStateOf(false)
     //false = O ; true = X
@@ -408,21 +410,22 @@ fun main() {
                             if (!list[row][col]!!.clicked) {
 
                                 onClick {
-                                    if (singleOrMulti) {
-                                        setValue(row, col)
-                                        checkEnd()
-                                        list[row][col]!!.clicked = true
-                                    } else {
-                                        setValue2(row, col)
-                                        checkEnd()
-                                        for (n in 0..1000) {
-                                            for (m in 0..1000) {
-                                                2 + 2
+                                    if (!isComputersTurn) {
+                                        if (singleOrMulti) {
+                                            setValue(row, col)
+                                            checkEnd()
+                                            list[row][col]!!.clicked = true
+                                        } else {
+                                            setValue2(row, col)
+                                            checkEnd()
+                                            isComputersTurn = true
+                                            scope.launch {
+                                                delay(1000)
+                                                computersChoice()
+                                                isComputersTurn = false
+                                                checkEnd()
                                             }
                                         }
-                                        computersChoice()
-                                        checkEnd()
-
                                     }
                                 }
                             }
