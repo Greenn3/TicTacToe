@@ -2,6 +2,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.FirebaseOptions
+import dev.gitlive.firebase.initialize
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
@@ -10,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
 import org.jetbrains.compose.web.renderComposable
+import kotlin.js.Date
 import kotlin.random.Random
 
 
@@ -22,29 +26,49 @@ open class Field {
 val scope = MainScope()
 
 fun main() {
+
+
+    val firebase = Firebase.initialize(options = FirebaseOptions(
+
+        apiKey = "AIzaSyBlC7b0GEiWbMpF475QY6o4EjPCK3KK07c",
+        authDomain = "tictactoemultiplayer-ee7e9.firebaseapp.com",
+        projectId = "tictactoemultiplayer-ee7e9",
+        storageBucket = "tictactoemultiplayer-ee7e9.appspot.com",
+        gcmSenderId = "731398405007",
+        applicationId = "1:731398405007:web:fffe73939dfac892ab29fa",
+
+    ))
+
     document.body?.style?.backgroundColor = "grey"
 
-    val list: MutableList<MutableList<Field?>> = mutableStateListOf(
-        mutableStateListOf(null, null, null),
-        mutableStateListOf(null, null, null),
-        mutableStateListOf(null, null, null)
+    val list: MutableList<MutableList<Field>> = mutableStateListOf(
+        mutableStateListOf(Field(), Field(), Field()),
+        mutableStateListOf(Field(), Field(), Field()),
+        mutableStateListOf(Field(), Field(), Field())
     )
 
-    for (row in 0..2) {
-        for (col in 0..2) {
-            //var field : Field()
-            list[row][col] = Field()
-        }
+
+
+   // list[2][2]!!.value = 'h'
+
+    val listRow1 = mutableStateListOf(list[0][0], list[0][1], list[0][2])
+    val listRow2 = mutableStateListOf(list[1][0], list[1][1], list[1][2])
+    val listRow3 = mutableStateListOf(list[2][0], list[2][1], list[2][2])
+    val listCol1 = mutableStateListOf(list[0][0], list[1][0], list[2][0])
+    val listCol2 = mutableStateListOf(list[0][1], list[1][1], list[2][1])
+    val listCol3 = mutableStateListOf(list[0][2], list[1][2], list[2][2])
+    val listDiag1 = mutableStateListOf(list[0][0], list[1][1], list[2][2])
+    val listDiag2 = mutableStateListOf(list[2][0], list[1][1], list[0][2])
+
+    val bigList = listOf(listCol1, listCol2, listCol3, listDiag1, listDiag2, listRow1, listRow2, listRow3)
+
+    fun generateId() : String{
+        var time : Double = Date.now()
+        return time.toString()
+
     }
 
-    val listRow1: MutableList<Field?> = mutableStateListOf(list[0][0], list[0][1], list[0][2])
-    val listRow2: MutableList<Field?> = mutableStateListOf(list[0][0], list[0][1], list[0][2])
-    val listRow3: MutableList<Field?> = mutableStateListOf(list[2][0], list[2][1], list[2][2])
-    val listCol1: MutableList<Field?> = mutableStateListOf(list[0][0], list[1][0], list[2][0])
-    val listCol2: MutableList<Field?> = mutableStateListOf(list[0][1], list[1][1], list[2][1])
-    val listCol3: MutableList<Field?> = mutableStateListOf(list[0][2], list[1][2], list[2][2])
-    val listDiag1: MutableList<Field?> = mutableStateListOf(list[0][0], list[1][1], list[2][2])
-    val listDiag2: MutableList<Field?> = mutableStateListOf(list[2][0], list[1][1], list[0][2])
+  var id by mutableStateOf("")
 
     var isComputersTurn by mutableStateOf(false)
 //true = multi ; false = single
@@ -55,10 +79,10 @@ fun main() {
     var choiceXY: Boolean by mutableStateOf(false)
     fun setValue(rowIndex: Int, colIndex: Int) {
         if (XorO) {
-            list[rowIndex][colIndex]!!.value = 'X'
+            list[rowIndex][colIndex].value = 'X'
             XorO = false
         } else {
-            list[rowIndex][colIndex]!!.value = 'O'
+            list[rowIndex][colIndex].value = 'O'
             XorO = true
 
         }
@@ -66,108 +90,52 @@ fun main() {
 
     fun setValue2(rowIndex: Int, colIndex: Int) {
         if (XorO) {
-            list[rowIndex][colIndex]!!.value = 'X'
+            list[rowIndex][colIndex].value = 'X'
 
         } else {
-            list[rowIndex][colIndex]!!.value = 'O'
+            list[rowIndex][colIndex].value = 'O'
 
 
         }
     }
 
-    fun checkEnd() {
-        if (listCol1[0]!!.value == listCol1[1]!!.value && listCol1[1]!!.value == listCol1[2]!!.value) {
-            if (listCol1[1]!!.value == 'X') {
-                window.setTimeout({
-                    window.alert("X wins")
-                }, 200)
-            } else if (listCol1[1]!!.value == 'O') {
-                window.setTimeout({
-                    window.alert("O wins")
-                }, 200)
-            }
 
-        } else if (listCol2[0]!!.value == listCol2[1]!!.value && listCol2[1]!!.value == listCol2[2]!!.value) {
-            if (listCol2[1]!!.value == 'X') {
+    fun checkEnd(list : List<Field>) : Boolean {
+        if (list[0].value == list[1].value && list[1].value == list[2].value) {
+            if (list[1].value == 'X') {
                 window.setTimeout({
                     window.alert("X wins")
                 }, 200)
-            } else if (listCol2[1]!!.value == 'O') {
+                return true
+            }
+            else if(list[1].value == 'O'){
                 window.setTimeout({
                     window.alert("O wins")
                 }, 200)
+            return true
             }
+        }
+        return false
+    }
 
-        } else if (listCol3[0]!!.value == listCol3[1]!!.value && listCol3[1]!!.value == listCol3[2]!!.value) {
-            if (listCol3[1]!!.value == 'X') {
-                window.setTimeout({
-                    window.alert("X wins")
-                }, 200)
-            } else if (listCol3[1]!!.value == 'O') {
-                window.setTimeout({
-                    window.alert("O wins")
-                }, 200)
-            }
-
-        } else if (listRow1[0]!!.value == listRow1[1]!!.value && listRow1[1]!!.value == listRow1[2]!!.value) {
-            if (listRow1[1]!!.value == 'X') {
-                window.setTimeout({
-                    window.alert("X wins")
-                }, 200)
-            } else if (listRow1[1]!!.value == 'O') {
-                window.setTimeout({
-                    window.alert("O wins")
-                }, 200)
-            }
-
-        } else if (listRow2[0]!!.value == listRow2[1]!!.value && listRow2[1]!!.value == listRow2[2]!!.value) {
-            if (listRow2[1]!!.value == 'X') {
-                window.setTimeout({
-                    window.alert("X wins")
-                }, 200)
-            } else if (listRow2[1]!!.value == 'O') {
-                window.setTimeout({
-                    window.alert("O wins")
-                }, 200)
-            }
-
-        } else if (listRow3[0]!!.value == listRow3[1]!!.value && listRow3[1]!!.value == listRow3[2]!!.value) {
-            if (listRow3[1]!!.value == 'X') {
-                window.setTimeout({
-                    window.alert("X wins")
-                }, 200)
-            } else if (listRow3[1]!!.value == 'O') {
-                window.setTimeout({
-                    window.alert("O wins")
-                }, 200)
-            }
-
-        } else if (listDiag1[0]!!.value == listDiag1[1]!!.value && listDiag1[1]!!.value == listDiag1[2]!!.value) {
-            if (listDiag1[1]!!.value == 'X') {
-                window.setTimeout({
-                    window.alert("X wins")
-                }, 200)
-            } else if (listDiag1[1]!!.value == 'O') {
-                window.setTimeout({
-                    window.alert("O wins")
-                }, 200)
-            }
-
-        } else if (listDiag2[0]!!.value == listDiag2[1]!!.value && listDiag2[1]!!.value == listDiag2[2]!!.value) {
-            if (listDiag2[1]!!.value == 'X') {
-                window.setTimeout({
-                    window.alert("X wins")
-                }, 200)
-            } else if (listDiag2[1]!!.value == 'O') {
-                window.setTimeout({
-                    window.alert("O wins")
-                }, 200)
-            }
+fun endLock(){
+    for(row in 0..2){
+        for(col in 0..2){
+            list[row][col].clicked = true
+        }
+    }
+}
+    fun checkEnd() : Boolean {
+        if(bigList.any{
+            checkEnd(it)
+            }){
+            endLock()
+            return true
         }
         var setCount: Int by mutableStateOf(0)
         for (row in 0..2) {
             for (col in 0..2) {
-                if (list[row][col]!!.value != ' ') {
+                if (list[row][col].value != ' ') {
                     setCount++
                 }
             }
@@ -176,7 +144,10 @@ fun main() {
             window.setTimeout({
                 window.alert("It's a draw")
             }, 200)
+            endLock()
+            return true
         }
+        return false
     }
 
 
@@ -192,8 +163,8 @@ fun main() {
         var empties: MutableList<Field> = mutableStateListOf()
         for (row in 0..2) {
             for (col in 0..2) {
-                if (list[row][col]!!.value == ' ') {
-                    empties.add(list[row][col]!!)
+                if (list[row][col].value == ' ') {
+                    empties.add(list[row][col])
                 }
 
             }
@@ -209,11 +180,41 @@ fun main() {
     var playPressed: Boolean by mutableStateOf(false)
 
 
+    fun reset(){
+        playPressed = false
+        for(row in 0..2){
+            for(col in 0..2){
+                list[row][col].clicked = false
+                list[row][col].value = ' '
+                XorO = false
+            }
+        }
+
+    }
+
+
+//var code : String by mutableStateOf("")
+
+    fun convertBack(data : StoreData){
+       list[0][0].value = data.list[0][0]
+        list[0][1].value = data.list[1][0]
+        list[0][2].value = data.list[2][0]
+        list[1][0].value = data.list[3][0]
+        list[1][1].value = data.list[4][0]
+        list[1][2].value = data.list[5][0]
+        list[2][0].value = data.list[6][0]
+        list[2][1].value = data.list[7][0]
+        list[2][2].value = data.list[8][0]
+
+
+    }
+
+
 
     renderComposable(rootElementId = "root") {
         Table({
             style {
-                width(650.px)
+                width(700.px)
                 height(150.px)
                 border(3.px, LineStyle.Solid, Color.black)
                 property("border-spacing", "0px")
@@ -362,6 +363,7 @@ fun main() {
                     }
                     onClick {
                         playPressed = true
+                        id = generateId()
                     }
                 }){
                     Text("▶ \n Play")
@@ -385,10 +387,44 @@ fun main() {
                         fontSize(40.px)
                         backgroundColor(Color.indianred)
                     }
-                    onClick {  }
+                    onClick {
+                        reset()
+                    }
                 }){
                     Text("Reset")
                 }
+            }
+            Td({
+                style {
+                    width(100.px)
+                    height(150.px)
+                    //  border(3.px, LineStyle.Solid, Color.black)
+                    property("border-spacing", "0px")
+
+                }
+
+
+            }) {
+                Button({
+                    style{
+                        width(85.percent)
+                        height(40.percent)
+                        fontSize(20.px)
+                        backgroundColor(Color.indianred)
+                    }
+                    onClick {
+                        console.log(id)
+                        scope.launch {
+                            convertBack(read(id))
+                        }
+                    }
+                }){
+                    Text("Submit")
+                }
+                TextInput(id){
+                    onInput { id = it.value }
+                }
+                Label { Text(id) }
             }
         }
         //Main table
@@ -407,18 +443,26 @@ fun main() {
                 Tr {
                     for (col in 0..2) {
                         Td({
-                            if (!list[row][col]!!.clicked) {
-
+                            if (!list[row][col].clicked) {
                                 onClick {
                                     if (!isComputersTurn) {
                                         if (singleOrMulti) {
                                             setValue(row, col)
+
+                                            list[row][col].clicked = true
                                             checkEnd()
-                                            list[row][col]!!.clicked = true
+                                            scope.launch { write(generateId(), StoreData(
+                                                list.flatMap {
+                                                    it.map {
+                                                        it.value.toString()
+                                                    }
+                                                }, if(XorO) "X" else "O"
+                                            )) }
                                         } else {
                                             setValue2(row, col)
-                                            checkEnd()
+
                                             isComputersTurn = true
+                                            checkEnd()
                                             scope.launch {
                                                 delay(1000)
                                                 computersChoice()
@@ -453,7 +497,7 @@ fun main() {
 
                             }
                         }) {
-                            Text(list[row][col]!!.value.toString())
+                            Text(list[row][col].value.toString())
                         }
                     }
                 }
@@ -461,6 +505,9 @@ fun main() {
         }
     }
 }
+
+
+
 
 
 
