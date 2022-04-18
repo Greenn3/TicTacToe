@@ -9,6 +9,8 @@ import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.*
@@ -177,7 +179,7 @@ fun endLock(){
     }
 
 
-    var playPressed: Boolean by mutableStateOf(false)
+    var playPressed: Boolean by mutableStateOf(true)
 
 
     fun reset(){
@@ -206,7 +208,7 @@ fun endLock(){
         list[2][1].value = data.list[7][0]
         list[2][2].value = data.list[8][0]
 
-
+        XorO = data.next[0] == 'X'
     }
 
 
@@ -415,7 +417,7 @@ fun endLock(){
                     onClick {
                         console.log(id)
                         scope.launch {
-                            convertBack(read(id))
+                             readX(id).onEach {convertBack(it)}.collect()
                         }
                     }
                 }){
@@ -451,7 +453,7 @@ fun endLock(){
 
                                             list[row][col].clicked = true
                                             checkEnd()
-                                            scope.launch { write(generateId(), StoreData(
+                                            scope.launch { write(id, StoreData(
                                                 list.flatMap {
                                                     it.map {
                                                         it.value.toString()
